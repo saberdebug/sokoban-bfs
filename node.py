@@ -6,6 +6,12 @@ class Node:
         self.parent = parent    # nœud parent (None pour la racine)
         self.action = action    # action appliquée au parent pour arriver ici
         self.g = g              # coût du chemin (chaque pas coûte 1)
+        self.f = g              # fonction d'évaluation de A* : f = g + h
+
+    def setF(self, heuristic):
+        # f(n) = g(n) + h(n), h étant une fonction heuristique(state) -> nombre
+        self.f = self.g + heuristic(self.state)
+        return self.f
 
     def getPath(self):
         # Liste des états du départ jusqu'au but

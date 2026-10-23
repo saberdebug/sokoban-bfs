@@ -32,7 +32,7 @@ LEVEL_3 = [
     "OOOOOOOOO",
 ]
 
-# 3teste makach solution
+# 3 caisses (dont 1 déjà sur cible), 3 cibles - solution de coût 12
 LEVEL_4 = [
     "OOOOOOO",
     "O     O",
