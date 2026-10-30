@@ -5,24 +5,20 @@ from node import Node
 
 
 def astar(initial_state, heuristic):
-    """A* (recherche sur graphe). Retourne (noeud_but, nb_noeuds_développés)
-    ou (None, nb_noeuds_développés) s'il n'y a pas de solution."""
+    
     root = Node(initial_state)
     root.setF(heuristic)
 
-    tie = count()                                   # départage les f égaux (FIFO)
-    frontier = [(root.f, next(tie), root)]          # file de priorité sur f
-    best_g = {initial_state: 0}                     # meilleur g connu par état
+    tie = count()                                   
+    frontier = [(root.f, next(tie), root)]          
+    best_g = {initial_state: 0}                     
     expanded = 0
 
     while frontier:
         _, _, node = heapq.heappop(frontier)
-
-        if node.g > best_g.get(node.state, float("inf")):
-            continue                                # entrée périmée
-
+        
         if node.state.isGoal():
-            return node, expanded
+                    return node, expanded                               
 
         expanded += 1
         for action, succ in node.state.successorFunction():
