@@ -8,6 +8,7 @@ class SokobanPuzzle:
         "LEFT":  (0, -1),
         "RIGHT": (0, 1),
     }
+    _dead_cache = {}   # layout -> set of dead cells (computed once per level)
 
     def __init__(self, grid):
         # Grille stockée en tuple de chaînes (immuable -> utilisable dans un set)
@@ -62,6 +63,55 @@ class SokobanPuzzle:
 
         return successors
 
+    def _is_target(self, r, c):
+        return self.grid[r][c] in ("S", "*", ".")
+
+    def _line_dead(self, r, c, dr, dc, wr, wc):
+        # (dr, dc) : direction along the line the box can slide
+        # (wr, wc) : direction of the wall the box is against
+        for sign in (1, -1):
+            rr, cc = r, c
+            while self.grid[rr][cc] != "O":
+                # the wall side opens up -> the box can escape, not a deadlock
+                if self.grid[rr + wr][cc + wc] != "O":
+                    return False
+                # a target on the line -> the box can still be solved
+                if self._is_target(rr, cc):
+                    return False
+                rr += sign * dr
+                cc += sign * dc
+        return True   # whole line checked: no target and no way out
+
+    def _compute_dead(self):
+        dead = set()
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if self.grid[r][c] == "O" or self._is_target(r, c):
+                    continue
+                wall_v = self.grid[r - 1][c] == "O" or self.grid[r + 1][c] == "O"
+                wall_h = self.grid[r][c - 1] == "O" or self.grid[r][c + 1] == "O"
+                if wall_v and wall_h:                      # corner
+                    dead.add((r, c))
+                    continue
+                for wr in (-1, 1):                         # line along top/bottom wall
+                    if self.grid[r + wr][c] == "O" and self._line_dead(r, c, 0, 1, wr, 0):
+                        dead.add((r, c))
+                for wc in (-1, 1):                         # line along left/right wall
+                    if self.grid[r][c + wc] == "O" and self._line_dead(r, c, 1, 0, 0, wc):
+                        dead.add((r, c))
+        return dead
+
+    def dead_lock(self):
+        # layout without boxes/player = same key for every state of a level
+        key = tuple(row.replace("R", " ").replace("B", " ")
+                       .replace("*", "S").replace(".", "S") for row in self.grid)
+        if key not in SokobanPuzzle._dead_cache:
+            SokobanPuzzle._dead_cache[key] = self._compute_dead()
+        dead = SokobanPuzzle._dead_cache[key]
+
+        return any(self.grid[r][c] == "B" and (r, c) in dead
+                   for r in range(self.rows) for c in range(self.cols))
+        
     # Pour comparer des états et les mettre dans un set (utile pour BFS)
     def __eq__(self, other):
         return self.grid == other.grid

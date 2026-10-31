@@ -1,5 +1,3 @@
-# node.py
-
 class Node:
     def __init__(self, state, parent=None, action=None, g=0):
         self.state = state      # instance de SokobanPuzzle

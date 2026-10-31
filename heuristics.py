@@ -19,15 +19,6 @@ def _manhattan(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 
-DEADLOCK = 10_000
-
-
-def _in_corner(state, r, c):
-    wall = lambda rr, cc: state.grid[rr][cc] == "O"
-    return ((wall(r - 1, c) or wall(r + 1, c)) and
-            (wall(r, c - 1) or wall(r, c + 1)))
-
-
 def nb_left_blocks(state):
     # caisses pas encore sur une cible = caisses 'B'
     return sum(row.count("B") for row in state.grid)
@@ -49,15 +40,11 @@ def h2(state):
 
 def h3(state):
     
-    if nb_left_blocks(state) == 0:
-        return 0
     boxes, targets, player = _positions(state)
 
     # Blocage simple : une caisse 'B' coincée dans un coin ne pourra plus jamais
     # bouger -> état perdu, on le pénalise fortement (élagage).
-    for r, c in boxes:
-        if state.grid[r][c] == "B" and _in_corner(state, r, c):
-            return DEADLOCK
+   
 
     best = min(
         sum(_manhattan(b, t) for b, t in zip(boxes, perm))
